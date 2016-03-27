@@ -344,24 +344,37 @@ namespace BlackSch {
 // ButtonCalculate
 private: System::Void Calculate_Click(System::Object^  sender, System::EventArgs^  e)
 		 {
+			 try { 
 			 
 			 double stockPrice; //Get the StockPrice//
-			 stockPrice = Convert::ToDouble(tbStockPrice->Text);
+			 bool gotStockPrice; 
+			// stockPrice = Convert::ToDouble(tbStockPrice->Text);
+			 gotStockPrice = Double::TryParse(tbStockPrice->Text,stockPrice);
 
 			 double volatility;  //Get the Volatility// 
-			 volatility = Convert::ToDouble(tbVolatility->Text);
+			 bool gotVolatility;
+			// volatility = Convert::ToDouble(tbVolatility->Text);
+			 gotVolatility = Double::TryParse(tbVolatility->Text,volatility);
 
 			 double strikePrice; // Get the strick Price//
-			 strikePrice = Convert::ToDouble(tbStrikePrice->Text);
+			 bool gotStrikePrice;
+			 //strikePrice = Convert::ToDouble(tbStrikePrice->Text);
+			 gotStrikePrice = Double::TryParse(tbStrikePrice->Text,strikePrice);
 
 			 double riskFreeRate; // Get the risk free rate//
-			 riskFreeRate = Convert::ToDouble(tbRiskFreeRate->Text);
+			 bool gotRiskFreeRate;
+			// riskFreeRate = Convert::ToDouble(tbRiskFreeRate->Text);
+			 gotRiskFreeRate = Double::TryParse(tbRiskFreeRate->Text,riskFreeRate);
 
 			 System::TimeSpan daysdiff;  // Get the Time Difference as a fraction of a year// 
 			 double yearsdiff;
-			 daysdiff = this->ExpirationDate->Value - this->CurrentDate->Value;
+			 daysdiff = (this->ExpirationDate->Value) - (this->CurrentDate->Value);
 			 yearsdiff = ((double) daysdiff.Days/365.0);
 
+
+			 // If all the fields are entered calculate
+			 if (gotStockPrice&&gotRiskFreeRate&&gotStrikePrice&&gotVolatility)
+			 {
 			 // Calculates the Call Price
 			 double BscholeCall= BlackScholes('c',stockPrice,strikePrice,riskFreeRate,yearsdiff,volatility);
 			 // Calculates the Put Price
@@ -370,7 +383,27 @@ private: System::Void Calculate_Click(System::Object^  sender, System::EventArgs
 			 tbCallPrice ->Text=Convert::ToString(BscholeCall);
 			 tbPutPrice ->Text=Convert::ToString(BscholePut);
 
+			 // If the user enters a expiration date less than the current date
+			 if ( yearsdiff < 0 )
+			 {
+			 tbCallPrice ->Text=Convert::ToString(BscholeCall);
+			 tbPutPrice ->Text=Convert::ToString(BscholePut);
+			 MessageBox::Show("Warning: Expiration date predates the current date entered. Calculations may be inaccurate");
+			 
+			 }
+
+			 }
+			 //Displays if user leaves any field blank
+			 else if ((!gotStockPrice)||(!gotRiskFreeRate)||(!gotStrikePrice)||(!gotVolatility)) 
+			 {
+				 MessageBox::Show("Please enter a numberic value for all the fields"); 
+			 }
+			 
+			 } catch (Exception^ ex){
 			
+				 MessageBox::Show("Exception: " + ex->Message);
+			 } // End_Try catches any other exceptions
+			 
 			
 		 } //end_ButtonCalculate
 
